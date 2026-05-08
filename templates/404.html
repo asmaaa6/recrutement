@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Page non trouvée - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="mb-4">
+                <h1 style="font-size: 5rem; font-weight: bold; background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                    404
+                </h1>
+            </div>
+            <h2 class="fw-bold mb-3">Page Non Trouvée</h2>
+            <p class="text-muted mb-4">Oups! La page que vous recherchez n'existe pas ou a été supprimée.</p>
+            
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="/" class="btn btn-primary-custom">
+                    <i class="fas fa-home"></i> Retour à l'accueil
+                </a>
+                <a href="/dashboard" class="btn btn-outline-primary">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

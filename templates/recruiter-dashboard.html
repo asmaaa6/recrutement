@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord Recruteur - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">Tableau de Bord Recruteur</h2>
+            <p class="text-muted">Gérez vos offres et candidatures</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Statistiques -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Offres actives</p>
+                            <h3 class="fw-bold">5</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-blue); border-radius: 10px; color: var(--primary);">
+                            <i class="fas fa-briefcase fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Total candidatures</p>
+                            <h3 class="fw-bold">156</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-green); border-radius: 10px; color: var(--success);">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Meilleure compatibilité</p>
+                            <h3 class="fw-bold">94%</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-pink); border-radius: 10px; color: #EC4899;">
+                            <i class="fas fa-star fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Campagnes en cours</p>
+                            <h3 class="fw-bold">3</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-purple); border-radius: 10px; color: #8B5CF6;">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestion offres et candidatures -->
+    <div class="row g-4 mt-2">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Actions Recruteur</h5>
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary-custom w-100 mb-2">
+                        <i class="fas fa-plus"></i> Créer une offre
+                    </a>
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-list"></i> Gérer les offres
+                    </a>
+                    <a href="#" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-chart-bar"></i> Analyser les candidatures
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Top Candidats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="fw-bold mb-1">Jean Dupont</p>
+                                <small class="text-muted">Développeur Python</small>
+                            </div>
+                            <span class="badge bg-success">94%</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="fw-bold mb-1">Marie Martin</p>
+                                <small class="text-muted">Data Analyst</small>
+                            </div>
+                            <span class="badge bg-success">88%</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="fw-bold mb-1">Pierre Bernard</p>
+                                <small class="text-muted">Project Manager</small>
+                            </div>
+                            <span class="badge bg-warning">76%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

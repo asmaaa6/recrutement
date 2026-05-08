@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Erreur serveur - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="mb-4">
+                <h1 style="font-size: 5rem; font-weight: bold; color: #EF4444;">
+                    500
+                </h1>
+            </div>
+            <h2 class="fw-bold mb-3">Erreur Serveur</h2>
+            <p class="text-muted mb-4">Une erreur inattendue s'est produite. Notre équipe a été notifiée et travaille sur la solution.</p>
+            
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-info-circle"></i> Si le problème persiste, veuillez nous contacter à <a href="mailto:info@recrutai.com">info@recrutai.com</a>
+            </div>
+            
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="/" class="btn btn-primary-custom">
+                    <i class="fas fa-home"></i> Retour à l'accueil
+                </a>
+                <a href="/dashboard" class="btn btn-outline-primary">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

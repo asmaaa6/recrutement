@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">Tableau de Bord</h2>
+            <p class="text-muted">Bienvenue sur votre espace personnel</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Statistiques -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Candidatures soumises</p>
+                            <h3 class="fw-bold">12</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-blue); border-radius: 10px; color: var(--primary);">
+                            <i class="fas fa-file-pdf fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">En attente d'examen</p>
+                            <h3 class="fw-bold">8</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-yellow); border-radius: 10px; color: var(--warning);">
+                            <i class="fas fa-hourglass-half fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Acceptées</p>
+                            <h3 class="fw-bold">3</h3>
+                        </div>
+                        <div class="p-3" style="background: var(--light-green); border-radius: 10px; color: var(--success);">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Rejetées</p>
+                            <h3 class="fw-bold">1</h3>
+                        </div>
+                        <div class="p-3" style="background: #FFE0E0; border-radius: 10px; color: var(--danger);">
+                            <i class="fas fa-times-circle fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row g-4 mt-2">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Actions Rapides</h5>
+                </div>
+                <div class="card-body">
+                    <a href="/cv-upload" class="btn btn-primary-custom w-100 mb-2">
+                        <i class="fas fa-upload"></i> Upload mon CV
+                    </a>
+                    <a href="/cv-analysis" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-microscope"></i> Analyser mon CV
+                    </a>
+                    <a href="/chatbot" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-comments"></i> Chatbot d'aide
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Offres d'emploi</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Aucune offre suggérée pour le moment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

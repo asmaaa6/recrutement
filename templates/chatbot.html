@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Chatbot - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="height: 600px; display: flex; flex-direction: column;">
+                <div class="card-header bg-white border-0 py-3" style="background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-pink)) !important; color: white;">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-comments"></i> Assistant RecrutAI
+                    </h5>
+                    <small>Posez vos questions sur votre candidature</small>
+                </div>
+
+                <div class="card-body p-4 overflow-auto" id="chatContainer" style="flex: 1; background: #F9FAFB;">
+                    <!-- Messages du chatbot -->
+                    <div class="mb-3">
+                        <div class="d-flex gap-2 mb-3">
+                            <div class="p-3" style="background: var(--light-blue); border-radius: 10px; max-width: 70%;">
+                                <p class="mb-0">Bonjour! Je suis votre assistant RecrutAI. Je suis ici pour répondre à toutes vos questions sur le processus de recrutement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-top py-3">
+                    <form id="chatForm" class="d-flex gap-2">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Posez votre question...">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const message = document.getElementById('messageInput').value;
+    
+    if (message.trim()) {
+        // Ajouter le message de l'utilisateur
+        const userMessage = document.createElement('div');
+        userMessage.className = 'd-flex gap-2 mb-3 justify-content-end';
+        userMessage.innerHTML = `<div class="p-3" style="background: var(--primary); border-radius: 10px; max-width: 70%; color: white;">${message}</div>`;
+        document.getElementById('chatContainer').appendChild(userMessage);
+        
+        // Simuler la réponse du chatbot
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.className = 'd-flex gap-2 mb-3';
+            botMessage.innerHTML = `<div class="p-3" style="background: var(--light-blue); border-radius: 10px; max-width: 70%;">Merci pour votre question! Je traite votre demande...</div>`;
+            document.getElementById('chatContainer').appendChild(botMessage);
+            
+            // Scroll vers le bas
+            document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+        }, 500);
+        
+        document.getElementById('messageInput').value = '';
+    }
+});
+</script>
+{% endblock %}

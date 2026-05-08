@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CV - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">Télécharger votre CV</h2>
+            <p class="text-muted">Commencez par importer votre CV pour l'analyse</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm" class="needs-validation" novalidate>
+                        <div class="upload-area p-5 text-center mb-4" style="border: 2px dashed var(--primary); border-radius: 15px; background: var(--light-blue); cursor: pointer;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary);"></i>
+                            <h5 class="mt-3 fw-bold">Déposez votre CV ici</h5>
+                            <p class="text-muted mb-0">ou cliquez pour sélectionner un fichier</p>
+                            <input type="file" name="cv_file" id="cvFile" class="form-control" accept=".pdf,.doc,.docx,.txt" required style="position: absolute; opacity: 0; cursor: pointer;">
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i> Formats acceptés : PDF, DOC, DOCX, TXT (Maximum 16MB)
+                        </div>
+
+                        <div id="fileInfo" class="alert alert-success d-none">
+                            <i class="fas fa-check-circle"></i> Fichier sélectionné : <strong id="fileName"></strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom w-100" id="submitBtn" disabled>
+                            <i class="fas fa-upload"></i> Télécharger le CV
+                        </button>
+                    </form>
+
+                    <div class="mt-4 text-center">
+                        <p class="text-muted small">Vous avez besoin d'aide ? <a href="/chatbot" class="text-primary">Parlez à notre chatbot</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('cvFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileInfo').classList.remove('d-none');
+        document.getElementById('submitBtn').disabled = false;
+    }
+});
+
+document.querySelector('.upload-area').addEventListener('click', function() {
+    document.getElementById('cvFile').click();
+});
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    // Ajouter la logique d'upload ici
+    alert('CV téléchargé avec succès !');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Analyse CV - RecrutAI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">Analyse de votre CV</h2>
+            <p class="text-muted">Résultats détaillés extraits par notre IA</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Informations Extraites</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-user"></i> Données Personnelles
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <p class="text-muted small">Nom</p>
+                                <p class="fw-bold">Jean Dupont</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted small">Email</p>
+                                <p class="fw-bold">jean.dupont@email.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-graduation-cap"></i> Diplômes
+                        </h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <p class="fw-bold mb-1">Licence Informatique</p>
+                                <small class="text-muted">Université d'Île-de-France - 2018</small>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-briefcase"></i> Expériences
+                        </h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <p class="fw-bold mb-1">Développeur Python (2020-2026)</p>
+                                <small class="text-muted">TechCorp - Paris</small>
+                            </li>
+                            <li class="list-group-item">
+                                <p class="fw-bold mb-1">Junior Developer (2018-2020)</p>
+                                <small class="text-muted">StartupXYZ</small>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr>
+
+                    <div>
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="fas fa-star"></i> Compétences Détectées
+                        </h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light-blue">Python</span>
+                            <span class="badge bg-light-blue">Flask</span>
+                            <span class="badge bg-light-blue">SQL</span>
+                            <span class="badge bg-light-pink">JavaScript</span>
+                            <span class="badge bg-light-green">Machine Learning</span>
+                            <span class="badge bg-light-purple">Docker</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Score Global</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div style="font-size: 4rem; font-weight: bold; color: var(--primary);">85%</div>
+                    <p class="text-muted">Qualité du profil</p>
+                    <div class="progress my-3" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" style="width: 85%; background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-pink));"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Recommandations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info small">
+                        <i class="fas fa-lightbulb"></i> Ajouter plus de détails sur vos projets
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="fas fa-lightbulb"></i> Inclure des certifications
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="fas fa-lightbulb"></i> Mettre à jour votre photo
+                    </div>
+                </div>
+            </div>
+
+            <a href="/chatbot" class="btn btn-primary-custom w-100 mt-3">
+                <i class="fas fa-comments"></i> Discuter avec le Chatbot
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
