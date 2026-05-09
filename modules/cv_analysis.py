@@ -1,111 +1,195 @@
-# Module d'Analyse de CV - Powered by Claude AI
-import os
+"""Module d'analyse de CV (regex uniquement)
+
+Objectif:
+- Extraire le texte d'un PDF avec PyPDF2
+- Nettoyer le texte
+- Extraire informations avec regex (pas d'API, pas spaCy)
+
+Sortie:
+- dict avec clés: skills, education, experience, languages, contact_info, years_experience, full_text, processed_text
+"""
+
+from __future__ import annotations
+
 import re
-import json
-import anthropic
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
-class CVAnalyzer:
-    """Analyseur de CV utilisant l'API Claude"""
-    
-    def __init__(self):
-        self.client = anthropic.Anthropic(
-            api_key=os.environ.get('ANTHROPIC_API_KEY')
-        )
-    
-    def analyze_cv(self, file_path):
-        """Analyse complète d'un CV"""
-        try:
-            text = self._read_file(file_path)
-            
-            message = self.client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=1000,
-                messages=[{
-                    "role": "user",
-                    "content": f"""Analyse ce CV et retourne UNIQUEMENT un JSON:
-{{
-    "skills": ["skill1", "skill2"],
-    "education": ["diplome1"],
-    "experience": ["experience1"],
-    "languages": ["langue1"],
-    "contact_info": {{
-        "emails": ["email@example.com"],
-        "phones": ["0600000000"]
-    }},
-    "years_experience": 3,
-    "full_text": "résumé du profil en 2 phrases"
-}}
 
-CV:
-{text}"""
-                }]
+_SKILL_PATTERNS: Dict[str, List[str]] = {
+    # Web / Langages
+    "Python": [r"\bpython\b", r"\bdjango\b", r"\bflask\b"],
+    "JavaScript": [r"\bjavascript\b", r"\bnode\.js\b", r"\breact\b", r"\bvue\.js\b"],
+    "SQL": [r"\bsql\b", r"\bmysql\b", r"\bpostgresql\b", r"\bpostgres\b"],
+    "HTML/CSS": [r"\bhtml\b", r"\bcss\b"],
+    "Java": [r"\bjava\b"],
+    "C/C++": [r"\bc\+\+\b", r"\bc\b"],
+    "Machine Learning": [r"\bmachine learning\b", r"\bdeep learning\b", r"\bscikit[- ]learn\b"],
+    "Data Analysis": [r"\bpandas\b", r"\bdata analysis\b", r"\bdata\s+analysis\b"],
+    "Docker": [r"\bdocker\b", r"\bkubernetes\b"],
+    "Git": [r"\bgit\b", r"\bgithub\b", r"\bgitlab\b"],
+    "NLP": [r"\bnlp\b", r"\btransformers\b"],
+}
+
+
+_LANGUAGE_PATTERNS: Dict[str, List[str]] = {
+    "Français": [r"\bfran(c|ç)ais\b", r"\bfrench\b"],
+    "Anglais": [r"\benglish\b", r"\banglais\b"],
+    "Arabe": [r"\barabe\b", r"\barabic\b"],
+}
+
+
+def _collapse_whitespace(text: str) -> str:
+    text = text.replace("\u00a0", " ")
+    text = re.sub(r"[\t\r]+", " ", text)
+    text = re.sub(r"\n{2,}", "\n", text)
+    text = re.sub(r" +", " ", text)
+    return text.strip()
+
+
+def _extract_emails(text: str) -> List[str]:
+    return list(
+        dict.fromkeys(
+            re.findall(
+                r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
+                text,
             )
-            
-            result = message.content[0].text
-            return json.loads(result)
-            
-        except Exception as e:
-            print(f"Erreur analyse CV: {e}")
-            return self._fallback_analysis(file_path)
-    
-    def _fallback_analysis(self, file_path):
-        """Analyse basique sans API"""
-        text = self._read_file(file_path)
-        return {
-            'skills': self._extract_skills_basic(text),
-            'education': [],
-            'experience': [],
-            'languages': self._extract_languages_basic(text),
-            'contact_info': self._extract_contact_info(text),
-            'years_experience': 0,
-            'full_text': text[:500]
-        }
-    
-    def _extract_skills_basic(self, text):
-        skills_keywords = {
-            'Python': ['python', 'django', 'flask'],
-            'JavaScript': ['javascript', 'react', 'vue'],
-            'SQL': ['sql', 'mysql', 'postgresql'],
-            'Machine Learning': ['machine learning', 'deep learning'],
-            'Docker': ['docker', 'kubernetes'],
-            'Git': ['git', 'github', 'gitlab'],
-        }
-        detected = []
-        text_lower = text.lower()
-        for skill, keywords in skills_keywords.items():
-            if any(k in text_lower for k in keywords):
-                detected.append(skill)
-        return detected
-    
-    def _extract_languages_basic(self, text):
-        languages = {
-            'Français': ['français', 'french'],
-            'Anglais': ['anglais', 'english'],
-            'Arabe': ['arabe', 'arabic'],
-        }
-        detected = []
-        text_lower = text.lower()
-        for lang, keywords in languages.items():
-            if any(k in text_lower for k in keywords):
-                detected.append(lang)
-        return detected
-    
-    def _extract_contact_info(self, text):
-        emails = re.findall(
-            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', text)
-        phones = re.findall(r'(?:\+213|0)[1-9][0-9]{8}', text)
-        return {'emails': emails, 'phones': phones}
-    
-    def _read_file(self, file_path):
-        try:
-            if file_path.endswith('.pdf'):
-                from PyPDF2 import PdfReader
-                reader = PdfReader(file_path)
-                return ' '.join([page.extract_text() for page in reader.pages])
-            else:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
-        except:
-            return ""
+        )
+    )
 
-cv_analyzer = CVAnalyzer()
+
+def _extract_phones(text: str) -> List[str]:
+    # Support simple: Algérie (+213 XXXXXXXXX ou 0XXXXXXXXX)
+    phones = re.findall(r"(?:\+213|0)[1-9][0-9]{8}\b", text)
+    return list(dict.fromkeys(phones))
+
+
+def _extract_skills(text: str) -> List[str]:
+    text_l = text.lower()
+    found: List[str] = []
+    for skill, patterns in _SKILL_PATTERNS.items():
+        for p in patterns:
+            if re.search(p, text_l, flags=re.IGNORECASE):
+                found.append(skill)
+                break
+    # Remove duplicates preserving order
+    return list(dict.fromkeys(found))
+
+
+def _extract_languages(text: str) -> List[str]:
+    text_l = text.lower()
+    found: List[str] = []
+    for lang, patterns in _LANGUAGE_PATTERNS.items():
+        for p in patterns:
+            if re.search(p, text_l, flags=re.IGNORECASE):
+                found.append(lang)
+                break
+    return list(dict.fromkeys(found))
+
+
+def _extract_years_experience(text: str) -> float:
+    # Heuristique: cherche "X ans" ou "\b(\d{1,2})\+ ans"
+    m = re.search(r"\b(\d{1,2})\s*(?:\+\s*)?ans\b", text, flags=re.IGNORECASE)
+    if m:
+        try:
+            return float(m.group(1))
+        except Exception:
+            pass
+    return 0.0
+
+
+def _extract_sections_list(text: str, section_titles: List[str]) -> List[str]:
+    # Extrait grossier: prend les 800 premiers chars après un titre connu
+    for title in section_titles:
+        # ex: "Experience" / "Expérience" / "Expérience professionnelle"
+        pattern = r"(?:^|\n)\s*" + re.escape(title) + r"\s*[:\-]?\s*\n"
+        m = re.search(pattern, text, flags=re.IGNORECASE)
+        if not m:
+            continue
+        start = m.end()
+        chunk = text[start : start + 800]
+        # items possibles par lignes
+        items = [i.strip() for i in re.split(r"\n|•|\-\s", chunk) if i.strip()]
+        # nettoyer items trop courts
+        items = [i for i in items if len(i) >= 6]
+        return items[:10]
+    return []
+
+
+def _extract_education(text: str) -> List[str]:
+    return _extract_sections_list(
+        text,
+        ["Education", "Educations", "Diplômes", "Diplome", "Formation", "Formations"],
+    )
+
+
+def _extract_experience(text: str) -> List[str]:
+    return _extract_sections_list(
+        text,
+        [
+            "Experience",
+            "Expérience",
+            "Expérience professionnelle",
+            "Professional Experience",
+            "Expérience",
+        ],
+    )
+
+
+def _read_file_text(file_path: str) -> str:
+    # PyPDF2 uniquement pour PDF; fallback texte si txt
+    if file_path.lower().endswith(".pdf"):
+        from PyPDF2 import PdfReader
+
+        reader = PdfReader(file_path)
+        pages = []
+        for page in reader.pages:
+            try:
+                pages.append(page.extract_text() or "")
+            except Exception:
+                pages.append("")
+        return "\n".join(pages)
+
+    # txt / doc/docx: on limite au plus simple (doc/docx non supportés sans libs supplémentaires)
+    # Pour compatibilité, si ce n'est pas pdf, on renvoie vide.
+    if file_path.lower().endswith(".txt"):
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            return f.read()
+
+    return ""
+
+
+class CVAnalyzerRegex:
+    def analyze_cv(self, file_path: str) -> Dict[str, Any]:
+        raw_text = _read_file_text(file_path)
+        processed_text = _collapse_whitespace(raw_text)
+
+        emails = _extract_emails(processed_text)
+        phones = _extract_phones(processed_text)
+
+        skills = _extract_skills(processed_text)
+        languages = _extract_languages(processed_text)
+
+        education = _extract_education(processed_text)
+        experience = _extract_experience(processed_text)
+
+        years_experience = _extract_years_experience(processed_text)
+
+        # Un résumé simple
+        full_text = processed_text[:1200]
+
+        return {
+            "skills": skills,
+            "education": education,
+            "experience": experience,
+            "languages": languages,
+            "contact_info": {"emails": emails, "phones": phones},
+            "years_experience": years_experience,
+            "full_text": full_text,
+            "processed_text": processed_text,
+            "raw_text": raw_text,
+        }
+
+
+cv_analyzer = CVAnalyzerRegex()
+
