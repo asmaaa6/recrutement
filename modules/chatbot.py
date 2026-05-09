@@ -1,91 +1,78 @@
-# Module Chatbot
-# Assistant conversationnel assisté par IA
-
-from datetime import datetime
+# Module Chatbot - Powered by Claude AI
+import os
+import anthropic
 
 class RecruitmentChatbot:
-    """Chatbot pour assister les candidats"""
+    """Chatbot intelligent pour RecrutAI"""
     
     def __init__(self):
-        # Base de réponses simples
-        self.responses = {
-            'hello': [
-                "Bonjour! Je suis l'assistant RecrutAI. Comment puis-je vous aider?",
-                "Bienvenue! Que puis-je faire pour vous?",
-            ],
-            'process': [
-                "Notre processus de recrutement comprend: 1) Analyse du CV 2) Matching avec offres 3) Entretien 4) Décision",
-                "Le processus typique prend 2-4 semaines.",
-            ],
-            'skills': [
-                "Les compétences principales recherchées varient selon le poste.",
-                "Consultez l'offre d'emploi pour voir les compétences requises.",
-            ],
-            'timeline': [
-                "Vous devriez recevoir une réponse dans les 2 semaines.",
-                "Notre équipe examinera votre candidature rapidement.",
-            ],
-            'contact': [
-                "Vous pouvez nous contacter à: info@recrutai.com",
-                "Téléphone: +33 1 23 45 67 89",
-            ]
-        }
+        self.client = anthropic.Anthropic(
+            api_key=os.environ.get('ANTHROPIC_API_KEY')
+        )
+        self.conversation_history = []
     
     def get_response(self, user_message):
-        """
-        Génère une réponse à partir du message utilisateur
+        """Génère une réponse intelligente via Claude"""
+        try:
+            self.conversation_history.append({
+                "role": "user",
+                "content": user_message
+            })
+            
+            message = self.client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=500,
+                system="""Tu es l'assistant virtuel de RecrutAI, 
+                une plateforme de recrutement intelligente algérienne.
+                Tu aides les candidats et recruteurs en français.
+                Tu es professionnel, sympathique et concis.
+                Tu réponds uniquement aux questions liées au recrutement,
+                aux offres d'emploi, aux CV et à la plateforme RecrutAI.""",
+                messages=self.conversation_history
+            )
+            
+            response = message.content[0].text
+            
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": response
+            })
+            
+            # Garder seulement les 10 derniers messages
+            if len(self.conversation_history) > 10:
+                self.conversation_history = self.conversation_history[-10:]
+            
+            return response
+            
+        except Exception as e:
+            print(f"Erreur chatbot: {e}")
+            return self._fallback_response(user_message)
+    
+    def _fallback_response(self, message):
+        """Réponse basique sans API"""
+        message_lower = message.lower()
         
-        Args:
-            user_message: Message de l'utilisateur
+        if any(w in message_lower for w in ['bonjour', 'salut', 'hello']):
+            return "Bonjour! Je suis l'assistant RecrutAI. Comment puis-je vous aider?"
         
-        Returns:
-            str: Réponse du chatbot
-        """
+        elif any(w in message_lower for w in ['offre', 'emploi', 'poste']):
+            return "Consultez nos offres d'emploi dans la section Offres. Vous pouvez filtrer par domaine et localisation."
         
-        message_lower = user_message.lower()
+        elif any(w in message_lower for w in ['cv', 'candidature']):
+            return "Pour soumettre votre CV, allez dans votre espace candidat et cliquez sur Upload CV."
         
-        # Keywords pour chaque catégorie
-        if any(word in message_lower for word in ['bonjour', 'salut', 'hello', 'hi']):
-            return self._random_response('hello')
+        elif any(w in message_lower for w in ['score', 'matching', 'compatibilité']):
+            return "Notre système analyse votre CV et calcule un score de compatibilité avec chaque offre."
         
-        elif any(word in message_lower for word in ['processus', 'étapes', 'comment ça marche']):
-            return self._random_response('process')
-        
-        elif any(word in message_lower for word in ['compétences', 'skills', 'requis']):
-            return self._random_response('skills')
-        
-        elif any(word in message_lower for word in ['combien de temps', 'timeline', 'réponse']):
-            return self._random_response('timeline')
-        
-        elif any(word in message_lower for word in ['contact', 'téléphone', 'email']):
-            return self._random_response('contact')
+        elif any(w in message_lower for w in ['contact', 'aide', 'support']):
+            return "Pour nous contacter: support@recrut-ai.com"
         
         else:
-            return "Merci pour votre question. Pour plus d'informations, consultez notre FAQ ou contactez notre équipe."
+            return "Je suis là pour vous aider avec vos questions sur le recrutement. Pouvez-vous préciser votre demande?"
     
-    def _random_response(self, category):
-        """Retourne une réponse aléatoire d'une catégorie"""
-        import random
-        if category in self.responses:
-            return random.choice(self.responses[category])
-        return "Je n'ai pas trouvé de réponse à votre question."
-    
-    def store_conversation(self, user_id, message, response):
-        """Stocke la conversation dans la base de données"""
-        # À implémenter
-        pass
-
-class AdvancedChatbot(RecruitmentChatbot):
-    """Chatbot avancé avec ML (optional)"""
-    
-    def __init__(self):
-        super().__init__()
-        self.model = None  # Modèle NLP avancé à charger
-    
-    def analyze_sentiment(self, message):
-        """Analyse le sentiment du message"""
-        # À implémenter avec TextBlob ou transformers
-        pass
+    def reset_conversation(self):
+        """Réinitialise l'historique"""
+        self.conversation_history = []
 
 # Instance globale
 chatbot = RecruitmentChatbot()
