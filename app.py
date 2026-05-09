@@ -14,6 +14,8 @@ from models.user import User
 # Import blueprints
 from modules.auth import auth_bp
 from modules.applications import applications_bp
+from modules.offers import offers_bp
+
 
 # API JSON (chatbot/cv-analysis)
 from modules.chatbot import chatbot as recruitment_chatbot
@@ -46,6 +48,8 @@ def load_user(user_id):
 # Blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(applications_bp)
+app.register_blueprint(offers_bp)
+
 
 
 @app.route('/')

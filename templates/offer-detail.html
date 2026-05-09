@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Offre - {{ offer.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex align-items-start justify-content-between gap-3">
+    <div>
+      <h2 class="fw-bold mb-1">{{ offer.title }}</h2>
+      <div class="text-muted">{{ offer.company }}{% if offer.location %} • {{ offer.location }}{% endif %}</div>
+      <div class="mt-2 small">Statut: <strong>{{ offer.status }}</strong></div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-primary" href="{{ url_for('offers.edit_offer', offer_id=offer.id) }}">
+        <i class="fas fa-edit"></i> Modifier
+      </a>
+      <a class="btn btn-outline-primary" href="{{ url_for('offers.list_offers') }}">Retour</a>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+      <h5 class="fw-bold">Description</h5>
+      <p class="text-muted">{{ offer.description }}</p>
+
+      <div class="row g-4 mt-4">
+        <div class="col-12 col-lg-6">
+          <h6 class="fw-bold">Compétences requises</h6>
+          <p class="text-muted">{{ offer.required_skills or '-' }}</p>
+        </div>
+        <div class="col-12 col-lg-6">
+          <h6 class="fw-bold">Compétences préférées</h6>
+          <p class="text-muted">{{ offer.preferred_skills or '-' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
