@@ -7,7 +7,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="fw-bold">Analyse de votre CV</h2>
-            <p class="text-muted">Résultats détaillés extraits par notre IA</p>
+            <p class="text-muted">Résultats détaillés extraits par notre moteur regex + PyPDF2</p>
         </div>
     </div>
 
@@ -20,16 +20,31 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h6 class="fw-bold text-primary mb-3">
-                            <i class="fas fa-user"></i> Données Personnelles
+                            <i class="fas fa-user"></i> Compétences / Profil
                         </h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <p class="text-muted small">Nom</p>
-                                <p class="fw-bold">Jean Dupont</p>
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-star me-2"></i>Compétences détectées</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if skills and skills|length > 0 %}
+                                    {% for s in skills[:25] %}
+                                        <span class="badge bg-light-blue">{{ s }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted small">Aucune compétence détectée.</span>
+                                {% endif %}
                             </div>
-                            <div class="col-md-6">
-                                <p class="text-muted small">Email</p>
-                                <p class="fw-bold">jean.dupont@email.com</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-language me-2"></i>Langues</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if languages and languages|length > 0 %}
+                                    {% for lang in languages[:10] %}
+                                        <span class="badge bg-light-pink">{{ lang }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted small">Aucune langue détectée.</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -37,49 +52,35 @@
                     <hr>
 
                     <div class="mb-4">
-                        <h6 class="fw-bold text-primary mb-3">
-                            <i class="fas fa-graduation-cap"></i> Diplômes
-                        </h6>
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-graduation-cap"></i> Diplômes</h6>
+                        {% if education and education|length > 0 %}
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <p class="fw-bold mb-1">Licence Informatique</p>
-                                <small class="text-muted">Université d'Île-de-France - 2018</small>
-                            </li>
+                            {% for item in education[:8] %}
+                                <li class="list-group-item">
+                                    <p class="fw-bold mb-1">{{ item }}</p>
+                                </li>
+                            {% endfor %}
                         </ul>
+                        {% else %}
+                            <p class="text-muted small mb-0">Aucun diplôme détecté.</p>
+                        {% endif %}
                     </div>
 
                     <hr>
 
                     <div class="mb-4">
-                        <h6 class="fw-bold text-primary mb-3">
-                            <i class="fas fa-briefcase"></i> Expériences
-                        </h6>
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-briefcase"></i> Expériences</h6>
+                        {% if experience and experience|length > 0 %}
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <p class="fw-bold mb-1">Développeur Python (2020-2026)</p>
-                                <small class="text-muted">TechCorp - Paris</small>
-                            </li>
-                            <li class="list-group-item">
-                                <p class="fw-bold mb-1">Junior Developer (2018-2020)</p>
-                                <small class="text-muted">StartupXYZ</small>
-                            </li>
+                            {% for item in experience[:8] %}
+                                <li class="list-group-item">
+                                    <p class="fw-bold mb-1">{{ item }}</p>
+                                </li>
+                            {% endfor %}
                         </ul>
-                    </div>
-
-                    <hr>
-
-                    <div>
-                        <h6 class="fw-bold text-primary mb-3">
-                            <i class="fas fa-star"></i> Compétences Détectées
-                        </h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge bg-light-blue">Python</span>
-                            <span class="badge bg-light-blue">Flask</span>
-                            <span class="badge bg-light-blue">SQL</span>
-                            <span class="badge bg-light-pink">JavaScript</span>
-                            <span class="badge bg-light-green">Machine Learning</span>
-                            <span class="badge bg-light-purple">Docker</span>
-                        </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">Aucune expérience détectée.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -91,10 +92,11 @@
                     <h5 class="fw-bold mb-0">Score Global</h5>
                 </div>
                 <div class="card-body text-center">
-                    <div style="font-size: 4rem; font-weight: bold; color: var(--primary);">85%</div>
+                    {% set pct = (cv_score * 100) | round(0, 'floor') %}
+                    <div style="font-size: 4rem; font-weight: bold; color: var(--primary);">{{ pct }}%</div>
                     <p class="text-muted">Qualité du profil</p>
                     <div class="progress my-3" style="height: 8px;">
-                        <div class="progress-bar" role="progressbar" style="width: 85%; background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-pink));"></div>
+                        <div class="progress-bar" role="progressbar" style="width: {{ pct }}%; background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-pink));"></div>
                     </div>
                 </div>
             </div>
@@ -105,13 +107,10 @@
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info small">
-                        <i class="fas fa-lightbulb"></i> Ajouter plus de détails sur vos projets
+                        <i class="fas fa-lightbulb"></i> Ajoutez plus de détails sur vos projets.
                     </div>
                     <div class="alert alert-info small">
-                        <i class="fas fa-lightbulb"></i> Inclure des certifications
-                    </div>
-                    <div class="alert alert-info small">
-                        <i class="fas fa-lightbulb"></i> Mettre à jour votre photo
+                        <i class="fas fa-lightbulb"></i> Incluez des certifications si vous en avez.
                     </div>
                 </div>
             </div>
@@ -123,3 +122,4 @@
     </div>
 </div>
 {% endblock %}
+

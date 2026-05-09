@@ -59,10 +59,8 @@ document.querySelector('.upload-area').addEventListener('click', function() {
     document.getElementById('cvFile').click();
 });
 
-document.getElementById('uploadForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    // Ajouter la logique d'upload ici
-    alert('CV téléchargé avec succès !');
-});
+// Upload natif (le formulaire POST vers /cv-upload)
+// Pas de preventDefault: on laisse Flask recevoir le fichier.
+
 </script>
 {% endblock %}

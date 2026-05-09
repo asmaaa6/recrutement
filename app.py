@@ -3,7 +3,8 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request
+
 from flask_login import login_required, current_user
 
 from extensions import db, login_manager
@@ -14,7 +15,11 @@ from models.user import User
 from modules.auth import auth_bp
 from modules.applications import applications_bp
 
+# API JSON (chatbot/cv-analysis)
+from modules.chatbot import chatbot as recruitment_chatbot
+
 app = Flask(__name__)
+
 
 environment = os.environ.get('FLASK_ENV', 'development')
 app.config.from_object(config[environment])
@@ -23,8 +28,14 @@ db.init_app(app)
 login_manager.init_app(app)
 
 # Ensure DB tables exist
+# Import models so SQLAlchemy can resolve relationships correctly
+from models.application import Application  # noqa: E402
+from models.offer import Offer  # noqa: E402
+from models.cv import CV  # noqa: E402
+
 with app.app_context():
     db.create_all()
+
 
 
 @login_manager.user_loader
@@ -63,6 +74,37 @@ def recruiter_dashboard():
 @login_required
 def chatbot_page():
     return render_template('chatbot.html')
+
+
+@app.route('/api/chatbot', methods=['POST'])
+@login_required
+def api_chatbot():
+    # Payload: {"message": "..."}
+    data = request.get_json(silent=True) or {}
+    msg = data.get('message') or data.get('msg') or ""
+    response = recruitment_chatbot.get_response(msg)
+    return {"response": response}
+
+
+@app.route('/api/cv-analysis', methods=['GET'])
+@login_required
+def api_cv_analysis():
+    # Simple endpoint for future UI; returns extracted CV fields.
+    from models.cv import CV
+    import json
+
+    cv = CV.query.filter_by(user_id=current_user.id).first()
+    if not cv or not cv.is_analyzed:
+        return {"error": "no_cv"}, 404
+
+    return {
+        "skills": json.loads(cv.skills) if cv.skills else [],
+        "education": json.loads(cv.education) if cv.education else [],
+        "experience": json.loads(cv.experience) if cv.experience else [],
+        "languages": json.loads(cv.languages) if cv.languages else [],
+        "cv_score": float(getattr(cv, "analysis_score", 0.0) or 0.0),
+    }
+
 
 
 # Backward compatible aliases (if any old code links directly)

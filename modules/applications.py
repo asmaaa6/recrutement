@@ -19,7 +19,8 @@ import os
 from datetime import datetime
 from typing import Any, Dict
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 

@@ -74,8 +74,9 @@
                 // Supprimer l'indicateur de typing
                 this.chatContainer.removeChild(typingDiv);
                 
-                // Obtenir la réponse (en production, appeler une API)
+            // Obtenir la réponse via backend (prédéfinie)
                 const response = this.generateResponse(userMessage);
+
                 this.addMessage(response, 'bot');
             }, 1000);
         }
@@ -118,11 +119,12 @@
     }
 
     // Initialiser au chargement du DOM
-    document.addEventListener('DOMContentLoaded', () => {
-        if (document.getElementById('chatContainer')) {
-            window.chatbot = new ChatbotUI();
-        }
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('chatContainer')) {
+        window.chatbot = new ChatbotUI();
+    }
+});
+
 
     // Exporter pour usage externe
     window.ChatbotUI = ChatbotUI;
