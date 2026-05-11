@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RecrutAI{% endblock %}</title>
+    <title>{% block title %}YASSIR_RH{% endblock %}</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    {% block extra_css %}{% endblock %}
+    
 </head>
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="/">
-                <i class="fas fa-brain text-primary"></i> RecrutAI
+                <i class="fas fa-brain text-primary"></i> YASSIR_RH
             </a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -29,14 +31,16 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user-circle"></i> {{ current_user.username }}
                             </a>
+
                             <ul class="dropdown-menu" aria-labelledby="userDropdown">
+
                                 <li><a class="dropdown-item" href="/profile">Mon profil</a></li>
                                 <li><a class="dropdown-item" href="/settings">Paramètres</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="/logout">Déconnexion</a></li>
                             </ul>
                         </li>
-                    {% else %}
+                   
                         <li class="nav-item">
                             <a class="btn btn-login" href="/login">Connexion</a>
                         </li>
@@ -45,11 +49,13 @@
                         </li>
                     {% endif %}
                 </ul>
+
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
+
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -67,11 +73,14 @@
 
     <!-- Footer -->
     <footer class="footer py-5 mt-5">
-        <div class="container">
+            <div class="container">
             <div class="row mb-4">
+
                 <div class="col-md-4 mb-4 mb-md-0">
-                    <h6 class="fw-bold mb-3">RecrutAI</h6>
+                    <h6 class="fw-bold mb-3">YASSIR_RH</h6>
                     <p class="text-muted small">Plateforme intelligente de recrutement basée sur l'IA.</p>
+
+
                 </div>
                 <div class="col-md-4 mb-4 mb-md-0">
                     <h6 class="fw-bold mb-3">Liens</h6>

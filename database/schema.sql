@@ -1,7 +1,4 @@
--- Schéma de Base de Données MySQL pour RecrutAI
--- À exécuter pour initialiser la base de données
 
--- Créer la base de données
 CREATE DATABASE IF NOT EXISTS recrutement;
 USE recrutement;
 
