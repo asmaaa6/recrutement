@@ -1,13 +1,11 @@
 """Matching CV ↔ Offre (TF-IDF + similarité cosinus)
 
 Objectif:
-- Construire un vecteur TF-IDF (un seul espace)
-- Calculer la similarité cosinus entre CV et Offre
-
-On évite les mélanges ad-hoc: score = cosinus(CV_text, offer_text).
+- Construire un espace TF-IDF unique
+- Calculer la similarité cosinus entre CV et offre
 
 Sortie:
-- rank_candidates(candidates, offer_info) -> liste triée avec global_score (0-1)
+- classer_candidats(candidats, info_offre) -> liste triée avec score_global (0-1)
 """
 
 from __future__ import annotations
@@ -19,108 +17,101 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-def _safe_list(x: Any) -> List[str]:
-    if x is None:
+def _liste_securisee(valeur: Any) -> List[str]:
+    if valeur is None:
         return []
-    if isinstance(x, list):
-        return [str(i) for i in x if i is not None]
-    if isinstance(x, str):
-        parts = [p.strip() for p in x.split(",")]
-        return [p for p in parts if p]
-    return [str(x)]
+    if isinstance(valeur, list):
+        return [str(item) for item in valeur if item is not None]
+    if isinstance(valeur, str):
+        elements = [item.strip() for item in valeur.split(",")]
+        return [item for item in elements if item]
+    return [str(valeur)]
 
 
-def _normalize_text(t: str) -> str:
-    t = (t or "").lower().strip()
-    t = re.sub(r"[^a-z0-9+\-\s]+", " ", t)
-    t = re.sub(r"\s+", " ", t)
-    return t
+def _normaliser_texte(texte: str) -> str:
+    texte = (texte or "").lower().strip()
+    texte = re.sub(r"[^a-z0-9+\-\s]+", " ", texte)
+    texte = re.sub(r"\s+", " ", texte)
+    return texte
 
 
-def _build_offer_text(offer_info: Dict[str, Any]) -> str:
-    title = offer_info.get("title") or ""
-    desc = offer_info.get("description") or ""
-    required = " ".join(_safe_list(offer_info.get("required_skills")))
-    preferred = " ".join(_safe_list(offer_info.get("preferred_skills")))
-    return _normalize_text(" ".join([title, required, preferred, desc]))
+def _construire_texte_offre(info_offre: Dict[str, Any]) -> str:
+    titre = info_offre.get("title") or ""
+    description = info_offre.get("description") or ""
+    competences_requises = " ".join(_liste_securisee(info_offre.get("required_skills")))
+    competences_preferees = " ".join(_liste_securisee(info_offre.get("preferred_skills")))
+    return _normaliser_texte(" ".join([titre, competences_requises, competences_preferees, description]))
 
 
-def _build_cv_text(cv_info: Dict[str, Any]) -> str:
-    skills = " ".join(_safe_list(cv_info.get("skills")))
-    processed = cv_info.get("processed_text") or ""
-    raw = cv_info.get("raw_text") or ""
-    full = cv_info.get("full_text") or ""
-    base = processed or raw or full or ""
-    return _normalize_text(" ".join([skills, base]))
+def _construire_texte_cv(info_cv: Dict[str, Any]) -> str:
+    competences = " ".join(_liste_securisee(info_cv.get("skills")))
+    texte_traite = info_cv.get("processed_text") or ""
+    texte_brut = info_cv.get("raw_text") or ""
+    texte_complet = info_cv.get("full_text") or ""
+    base = texte_traite or texte_brut or texte_complet or ""
+    return _normaliser_texte(" ".join([competences, base]))
 
 
-class CVMatcherTfidfCosine:
+class CVMatcheurTfidfCosinus:
     def __init__(
         self,
-        ngram_range: tuple[int, int] = (1, 2),
-        max_features: int = 5000,
+        plage_ngrammes: tuple[int, int] = (1, 2),
+        max_caracteres: int = 5000,
         min_df: int = 1,
     ):
-        self.vectorizer = TfidfVectorizer(
+        self.vehiculiseur = TfidfVectorizer(
             lowercase=True,
-            ngram_range=ngram_range,
+            ngram_range=plage_ngrammes,
             min_df=min_df,
-            max_features=max_features,
+            max_features=max_caracteres,
         )
 
-    def match_score(self, cv_text: str, offer_text: str) -> float:
-        X = self.vectorizer.fit_transform([cv_text, offer_text])
-        sim = cosine_similarity(X[0], X[1])[0][0]  # 0..1
-        if sim < 0:
-            sim = 0.0
-        if sim > 1:
-            sim = 1.0
-        return float(sim)
+    def score_correspondance(self, texte_cv: str, texte_offre: str) -> float:
+        matrice = self.vehiculiseur.fit_transform([texte_cv, texte_offre])
+        similarite = cosine_similarity(matrice[0], matrice[1])[0][0]
+        similarite = max(0.0, min(1.0, float(similarite)))
+        return similarite
 
-    def rank_candidates(
+    def classer_candidats(
         self,
-        candidates: List[Dict[str, Any]],
-        offer_info: Dict[str, Any],
+        candidats: List[Dict[str, Any]],
+        info_offre: Dict[str, Any],
         top_k: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
-        offer_text = _build_offer_text(offer_info)
+        texte_offre = _construire_texte_offre(info_offre)
 
-        cv_texts = []
-        for c in candidates:
-            cv_texts.append(_build_cv_text(c.get("cv_info", {})))
+        textes_cv = [_construire_texte_cv(c.get("cv_info", {})) for c in candidats]
 
-        if not cv_texts:
+        if not textes_cv:
             return []
 
-        # Fit une fois sur tous les CV + l'offre
-        all_texts = cv_texts + [offer_text]
-        X = self.vectorizer.fit_transform(all_texts)
+        textes_tous = textes_cv + [texte_offre]
+        matrice = self.vehiculiseur.fit_transform(textes_tous)
 
-        # Similarité: chaque CV vs offer (dernier index)
-        offer_vec = X[-1]
-        cv_vecs = X[:-1]
-        sims = cosine_similarity(cv_vecs, offer_vec).reshape(-1)
+        vecteur_offre = matrice[-1]
+        vecteurs_cv = matrice[:-1]
+        similarities = cosine_similarity(vecteurs_cv, vecteur_offre).reshape(-1)
 
-        results = []
-        for i, c in enumerate(candidates):
-            sim = float(sims[i])
-            results.append(
+        resultats = []
+        for index, candidat in enumerate(candidats):
+            score = float(similarities[index])
+            resultats.append(
                 {
-                    "candidate_id": c.get("id"),
-                    "name": c.get("name"),
-                    "global_score": sim,
-                    "textual_score": sim,
-                    "recommendation": self._get_recommendation(sim),
+                    "candidate_id": candidat.get("id"),
+                    "name": candidat.get("name"),
+                    "global_score": score,
+                    "textual_score": score,
+                    "recommendation": self._obtenir_recommandation(score),
                 }
             )
 
-        results.sort(key=lambda x: x["global_score"], reverse=True)
+        resultats.sort(key=lambda item: item["global_score"], reverse=True)
         if top_k is not None:
-            results = results[:top_k]
-        return results
+            resultats = resultats[:top_k]
+        return resultats
 
     @staticmethod
-    def _get_recommendation(score: float) -> str:
+    def _obtenir_recommandation(score: float) -> str:
         if score >= 0.85:
             return "Excellente correspondance - À interviewer en priorité"
         if score >= 0.7:
@@ -130,5 +121,5 @@ class CVMatcherTfidfCosine:
         return "Faible correspondance - Consulter manuellement"
 
 
-cv_matcher = CVMatcherTfidfCosine()
+cv_matcher = CVMatcheurTfidfCosinus()
 

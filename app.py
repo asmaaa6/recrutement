@@ -17,14 +17,14 @@ from modules.applications import applications_bp
 from modules.offers import offers_bp
 
 
-# API JSON (chatbot/cv-analysis)
+# API JSON (chatbot / analyse de CV)
 from modules.chatbot import chatbot as recruitment_chatbot
 
 app = Flask(__name__)
 
 
-environment = os.environ.get('FLASK_ENV', 'development')
-app.config.from_object(config[environment])
+environnement = os.environ.get('FLASK_ENV', 'development')
+app.config.from_object(config[environnement])
 
 db.init_app(app)
 login_manager.init_app(app)
@@ -80,17 +80,17 @@ def chatbot_page():
 @app.route('/api/chatbot', methods=['POST'])
 @login_required
 def api_chatbot():
-    # Payload: {"message": "..."}
-    data = request.get_json(silent=True) or {}
-    msg = data.get('message') or data.get('msg') or ""
-    response = recruitment_chatbot.get_response(msg)
-    return {"response": response}
+    # Corps de la requête: {"message": "..."}
+    donnees = request.get_json(silent=True) or {}
+    message = donnees.get('message') or donnees.get('msg') or ""
+    reponse = recruitment_chatbot.get_response(message)
+    return {"response": reponse}
 
 
 @app.route('/api/cv-analysis', methods=['GET'])
 @login_required
 def api_cv_analysis():
-    # Simple endpoint for future UI; returns extracted CV fields.
+    # Endpoint simple pour l'interface : retourne les données extraites du CV.
     from models.cv import CV
     import json
 

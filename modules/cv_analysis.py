@@ -3,10 +3,10 @@
 Objectif:
 - Extraire le texte d'un PDF avec PyPDF2
 - Nettoyer le texte
-- Extraire informations avec regex (pas d'API, pas spaCy)
+- Extraire les informations clés avec des expressions régulières
 
 Sortie:
-- dict avec clés: skills, education, experience, languages, contact_info, years_experience, full_text, processed_text
+- dictionnaire avec clés: skills, education, experience, languages, contact_info, years_experience, full_text, processed_text
 """
 
 from __future__ import annotations
@@ -16,8 +16,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 
-_SKILL_PATTERNS: Dict[str, List[str]] = {
-    # Web / Langages
+_PATTERNS_COMPETENCES: Dict[str, List[str]] = {
     "Python": [r"\bpython\b", r"\bdjango\b", r"\bflask\b"],
     "JavaScript": [r"\bjavascript\b", r"\bnode\.js\b", r"\breact\b", r"\bvue\.js\b"],
     "SQL": [r"\bsql\b", r"\bmysql\b", r"\bpostgresql\b", r"\bpostgres\b"],
@@ -32,100 +31,96 @@ _SKILL_PATTERNS: Dict[str, List[str]] = {
 }
 
 
-_LANGUAGE_PATTERNS: Dict[str, List[str]] = {
+_PATTERNS_LANGUES: Dict[str, List[str]] = {
     "Français": [r"\bfran(c|ç)ais\b", r"\bfrench\b"],
     "Anglais": [r"\benglish\b", r"\banglais\b"],
     "Arabe": [r"\barabe\b", r"\barabic\b"],
 }
 
 
-def _collapse_whitespace(text: str) -> str:
-    text = text.replace("\u00a0", " ")
-    text = re.sub(r"[\t\r]+", " ", text)
-    text = re.sub(r"\n{2,}", "\n", text)
-    text = re.sub(r" +", " ", text)
-    return text.strip()
+def _nettoyer_espaces(texte: str) -> str:
+    texte = texte.replace("\u00a0", " ")
+    texte = re.sub(r"[\t\r]+", " ", texte)
+    texte = re.sub(r"\n{2,}", "\n", texte)
+    texte = re.sub(r" +", " ", texte)
+    return texte.strip()
 
 
-def _extract_emails(text: str) -> List[str]:
+def _extraire_emails(texte: str) -> List[str]:
     return list(
         dict.fromkeys(
             re.findall(
                 r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
-                text,
+                texte,
             )
         )
     )
 
 
-def _extract_phones(text: str) -> List[str]:
-    # Support simple: Algérie (+213 XXXXXXXXX ou 0XXXXXXXXX)
-    phones = re.findall(r"(?:\+213|0)[1-9][0-9]{8}\b", text)
-    return list(dict.fromkeys(phones))
+def _extraire_telephones(texte: str) -> List[str]:
+    # Exemple simple: France / Algérie, etc.
+    telephones = re.findall(r"(?:\+213|0)[1-9][0-9]{8}\b", texte)
+    return list(dict.fromkeys(telephones))
 
 
-def _extract_skills(text: str) -> List[str]:
-    text_l = text.lower()
-    found: List[str] = []
-    for skill, patterns in _SKILL_PATTERNS.items():
-        for p in patterns:
-            if re.search(p, text_l, flags=re.IGNORECASE):
-                found.append(skill)
+def _extraire_competences(texte: str) -> List[str]:
+    texte_minuscule = texte.lower()
+    trouves: List[str] = []
+    for competence, patterns in _PATTERNS_COMPETENCES.items():
+        for motif in patterns:
+            if re.search(motif, texte_minuscule, flags=re.IGNORECASE):
+                trouves.append(competence)
                 break
-    # Remove duplicates preserving order
-    return list(dict.fromkeys(found))
+    return list(dict.fromkeys(trouves))
 
 
-def _extract_languages(text: str) -> List[str]:
-    text_l = text.lower()
-    found: List[str] = []
-    for lang, patterns in _LANGUAGE_PATTERNS.items():
-        for p in patterns:
-            if re.search(p, text_l, flags=re.IGNORECASE):
-                found.append(lang)
+def _extraire_langues(texte: str) -> List[str]:
+    texte_minuscule = texte.lower()
+    langues_trouvees: List[str] = []
+    for langue, patterns in _PATTERNS_LANGUES.items():
+        for motif in patterns:
+            if re.search(motif, texte_minuscule, flags=re.IGNORECASE):
+                langues_trouvees.append(langue)
                 break
-    return list(dict.fromkeys(found))
+    return list(dict.fromkeys(langues_trouvees))
 
 
-def _extract_years_experience(text: str) -> float:
-    # Heuristique: cherche "X ans" ou "\b(\d{1,2})\+ ans"
-    m = re.search(r"\b(\d{1,2})\s*(?:\+\s*)?ans\b", text, flags=re.IGNORECASE)
-    if m:
+def _extraire_annees_experience(texte: str) -> float:
+    # Heuristique : cherche "X ans" ou "X+ ans"
+    match = re.search(r"\b(\d{1,2})\s*(?:\+\s*)?ans\b", texte, flags=re.IGNORECASE)
+    if match:
         try:
-            return float(m.group(1))
+            return float(match.group(1))
         except Exception:
             pass
     return 0.0
 
 
-def _extract_sections_list(text: str, section_titles: List[str]) -> List[str]:
-    # Extrait grossier: prend les 800 premiers chars après un titre connu
-    for title in section_titles:
-        # ex: "Experience" / "Expérience" / "Expérience professionnelle"
-        pattern = r"(?:^|\n)\s*" + re.escape(title) + r"\s*[:\-]?\s*\n"
-        m = re.search(pattern, text, flags=re.IGNORECASE)
-        if not m:
+def _extraire_liste_section(texte: str, titres_section: List[str]) -> List[str]:
+    # Extraction simple : prendre les premières lignes après un titre reconnu
+    for titre in titres_section:
+        motif = r"(?:^|\n)\s*" + re.escape(titre) + r"\s*[:\-]?\s*\n"
+        match = re.search(motif, texte, flags=re.IGNORECASE)
+        if not match:
             continue
-        start = m.end()
-        chunk = text[start : start + 800]
-        # items possibles par lignes
-        items = [i.strip() for i in re.split(r"\n|•|\-\s", chunk) if i.strip()]
-        # nettoyer items trop courts
-        items = [i for i in items if len(i) >= 6]
+        debut = match.end()
+        extrait = texte[debut : debut + 800]
+        items = [item.strip() for item in re.split(r"\n|•|\-\s", extrait) if item.strip()]
+        items = [item for item in items if len(item) >= 6]
         return items[:10]
     return []
 
 
-def _extract_education(text: str) -> List[str]:
-    return _extract_sections_list(
-        text,
+def _extraire_formation(texte: str) -> List[str]:
+    return _extraire_liste_section(
+        texte,
         ["Education", "Educations", "Diplômes", "Diplome", "Formation", "Formations"],
     )
 
 
-def _extract_experience(text: str) -> List[str]:
-    return _extract_sections_list(
-        text,
+def _extraire_experience(texte: str) -> List[str]:
+    return _extraire_liste_section(
+        texte,
         [
             "Experience",
             "Expérience",
@@ -136,60 +131,56 @@ def _extract_experience(text: str) -> List[str]:
     )
 
 
-def _read_file_text(file_path: str) -> str:
-    # PyPDF2 uniquement pour PDF; fallback texte si txt
-    if file_path.lower().endswith(".pdf"):
+def _lire_texte_fichier(chemin_fichier: str) -> str:
+    if chemin_fichier.lower().endswith(".pdf"):
         from PyPDF2 import PdfReader
 
-        reader = PdfReader(file_path)
+        lecteur = PdfReader(chemin_fichier)
         pages = []
-        for page in reader.pages:
+        for page in lecteur.pages:
             try:
                 pages.append(page.extract_text() or "")
             except Exception:
                 pages.append("")
         return "\n".join(pages)
 
-    # txt / doc/docx: on limite au plus simple (doc/docx non supportés sans libs supplémentaires)
-    # Pour compatibilité, si ce n'est pas pdf, on renvoie vide.
-    if file_path.lower().endswith(".txt"):
-        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-            return f.read()
+    if chemin_fichier.lower().endswith(".txt"):
+        with open(chemin_fichier, "r", encoding="utf-8", errors="ignore") as fichier:
+            return fichier.read()
 
     return ""
 
 
-class CVAnalyzerRegex:
-    def analyze_cv(self, file_path: str) -> Dict[str, Any]:
-        raw_text = _read_file_text(file_path)
-        processed_text = _collapse_whitespace(raw_text)
+class AnalyseurCVRegex:
+    def analyze_cv(self, chemin_fichier: str) -> Dict[str, Any]:
+        texte_brut = _lire_texte_fichier(chemin_fichier)
+        texte_nettoye = _nettoyer_espaces(texte_brut)
 
-        emails = _extract_emails(processed_text)
-        phones = _extract_phones(processed_text)
+        emails = _extraire_emails(texte_nettoye)
+        telephones = _extraire_telephones(texte_nettoye)
 
-        skills = _extract_skills(processed_text)
-        languages = _extract_languages(processed_text)
+        competences = _extraire_competences(texte_nettoye)
+        langues = _extraire_langues(texte_nettoye)
 
-        education = _extract_education(processed_text)
-        experience = _extract_experience(processed_text)
+        formation = _extraire_formation(texte_nettoye)
+        experience = _extraire_experience(texte_nettoye)
 
-        years_experience = _extract_years_experience(processed_text)
+        annees_experience = _extraire_annees_experience(texte_nettoye)
 
-        # Un résumé simple
-        full_text = processed_text[:1200]
+        resume = texte_nettoye[:1200]
 
         return {
-            "skills": skills,
-            "education": education,
+            "skills": competences,
+            "education": formation,
             "experience": experience,
-            "languages": languages,
-            "contact_info": {"emails": emails, "phones": phones},
-            "years_experience": years_experience,
-            "full_text": full_text,
-            "processed_text": processed_text,
-            "raw_text": raw_text,
+            "languages": langues,
+            "contact_info": {"emails": emails, "phones": telephones},
+            "years_experience": annees_experience,
+            "full_text": resume,
+            "processed_text": texte_nettoye,
+            "raw_text": texte_brut,
         }
 
 
-cv_analyzer = CVAnalyzerRegex()
+cv_analyzer = AnalyseurCVRegex()
 
