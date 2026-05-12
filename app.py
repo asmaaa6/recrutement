@@ -60,17 +60,14 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # simple routing: candidate users see dashboard.html, recruiters see recruiter-dashboard.html
-    if current_user.role == 'recruiter':
-        return redirect(url_for('recruiter_dashboard'))
-    return render_template('dashboard.html')
+    return redirect(url_for('recruiter_dashboard'))
 
 
 @app.route('/recruiter-dashboard')
 @login_required
 def recruiter_dashboard():
     if current_user.role != 'recruiter':
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
     return render_template('recruiter-dashboard.html')
 
 

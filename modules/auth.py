@@ -1,9 +1,9 @@
 """Gestion des utilisateurs (auth) pour RecrutAI.
 
 Objectif:
-- 2 rôles: candidat / recruteur
-- Signup + Login complets
-- Redirection selon le rôle après login
+- Comptes recruteur uniquement
+- Signup + Login sécurisés
+- Redirection vers le tableau de bord recruteur après login
 
 Routes:
 - GET/POST /signup
@@ -31,40 +31,36 @@ def signup():
     if request.method == "GET":
         return render_template("signup.html")
 
-    username = (request.form.get("username") or "").strip()
+    nom_utilisateur = (request.form.get("username") or "").strip()
     email = (request.form.get("email") or "").strip().lower()
-    password = request.form.get("password") or ""
-    password_confirm = request.form.get("confirm_password") or request.form.get("password_confirm") or ""
+    mot_de_passe = request.form.get("password") or ""
+    confirmation_mot_de_passe = request.form.get("confirm_password") or request.form.get("password_confirm") or ""
 
-    role = (request.form.get("role") or "candidate").strip().lower()
-    if role not in {"candidate", "recruiter", "admin"}:
-        role = "candidate"
-
-    if not all([username, email, password, password_confirm]):
+    if not all([nom_utilisateur, email, mot_de_passe, confirmation_mot_de_passe]):
         return render_template("signup.html", error="Tous les champs sont requis"), 400
 
-    if len(password) < 6:
+    if len(mot_de_passe) < 6:
         return render_template("signup.html", error="Le mot de passe doit contenir au moins 6 caractères"), 400
 
-    if password != password_confirm:
+    if mot_de_passe != confirmation_mot_de_passe:
         return render_template("signup.html", error="Les mots de passe ne correspondent pas"), 400
 
-    if User.query.filter((User.username == username) | (User.email == email)).first():
+    if User.query.filter((User.username == nom_utilisateur) | (User.email == email)).first():
         return render_template("signup.html", error="Cet utilisateur ou email existe déjà"), 400
 
     try:
-        new_user = User(
-            username=username,
+        nouvel_utilisateur = User(
+            username=nom_utilisateur,
             email=email,
-            password_hash=generate_password_hash(password),
-            role=role if role in {"candidate", "recruiter", "admin"} else "candidate",
+            password_hash=generate_password_hash(mot_de_passe),
+            role="recruiter",
         )
-        db.session.add(new_user)
+        db.session.add(nouvel_utilisateur)
         db.session.commit()
 
-        login_user(new_user)
-        new_user.update_last_login()
-        return redirect(url_for("recruiter_dashboard")) if new_user.role == "recruiter" else redirect(url_for("dashboard"))
+        login_user(nouvel_utilisateur)
+        nouvel_utilisateur.update_last_login()
+        return redirect(url_for("recruiter_dashboard"))
     except Exception as e:
         db.session.rollback()
         return render_template("signup.html", error=f"Erreur lors de l'inscription: {e}"), 500
@@ -75,22 +71,25 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    email_or_username = (request.form.get("email") or request.form.get("username") or "").strip().lower()
-    password = request.form.get("password") or ""
-    remember = bool(request.form.get("remember"))
+    identifiant = (request.form.get("email") or request.form.get("username") or "").strip().lower()
+    mot_de_passe = request.form.get("password") or ""
+    se_souvenir = bool(request.form.get("remember"))
 
-    if not email_or_username or not password:
+    if not identifiant or not mot_de_passe:
         return render_template("login.html", error="Email et mot de passe requis"), 400
 
-    user = User.query.filter((User.email == email_or_username) | (User.username == email_or_username)).first()
+    utilisateur = User.query.filter((User.email == identifiant) | (User.username == identifiant)).first()
 
-    if not user or not check_password_hash(user.password_hash, password):
+    if not utilisateur or not check_password_hash(utilisateur.password_hash, mot_de_passe):
         return render_template("login.html", error="Email ou mot de passe incorrect"), 401
 
-    login_user(user, remember=remember)
-    user.update_last_login()
+    if utilisateur.role != "recruiter":
+        return render_template("login.html", error="Ce compte n'est pas autorisé. Créez un compte recruteur."), 403
 
-    return redirect(url_for("recruiter_dashboard")) if user.role == "recruiter" else redirect(url_for("dashboard"))
+    login_user(utilisateur, remember=se_souvenir)
+    utilisateur.update_last_login()
+
+    return redirect(url_for("recruiter_dashboard"))
 
 
 @auth_bp.route("/logout")
